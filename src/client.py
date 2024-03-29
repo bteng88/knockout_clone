@@ -20,14 +20,14 @@ label = pyglet.text.Label("Label over here", font_name='Comic Sans MS', font_siz
                           x=window.width//2 - 300, y=window.height//2 + 250, anchor_x='center', anchor_y='center')
 
 # Load icons-play/retry in the top right
-quit_file_path = 'assets/graphics/icons/quit.png'
-retry_file_path = 'assets/graphics/icons/retry.png'
+quit_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons', 'quit.png')
+retry_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons', 'retry.png')
 quit_icon = pyglet.image.load(quit_file_path)
 retry_icon = pyglet.image.load(retry_file_path)
 
 # tmp to see if sprites load in/what they look like
-earth_ball_path = 'assets/graphics/sprites/earth.png'
-soccer_ball_path = 'assets/graphics/sprites/soccer_ball.png'
+earth_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'earth.png')
+soccer_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'soccer_ball.png')
 earth_ball_image = pyglet.image.load(earth_ball_path)
 soccer_ball_image = pyglet.image.load(soccer_ball_path)
 earth_sprite = pyglet.sprite.Sprite(earth_ball_image, 300, 300,)
@@ -61,7 +61,7 @@ class Platform:
 platform = Platform(x=window.width//2, y=window.height//2, width=600, height=350)
 
 # background
-background_image_path = 'assets/graphics/backgrounds/water.jpg'
+background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds', 'water.jpg')
 background_image = pyglet.image.load(background_image_path)
 background_sprite = pyglet.sprite.Sprite(background_image)
 
