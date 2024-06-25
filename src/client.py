@@ -6,11 +6,10 @@ from math import sqrt
 # Create a window
 window = pyglet.window.Window(width = 800, height = 600, caption="Game Board")
 
-''' need to adjust os path- use relative paths based on root directory to make more flexible
-    this is for icons/spirtes...'''
 # Get path from current directory to audio file
 current_dir = os.path.dirname(os.path.abspath(__file__))
-audio_file_path = os.path.join(current_dir, '..', 'assets', 'audio', 'music', 'a-promise(chosic.com).mp3')
+audio_file_path = os.path.join(current_dir, '..','assets', 'audio',
+                               'music', 'a-promise(chosic.com).mp3')
 
 # Play music using the path
 music = pyglet.media.load(audio_file_path)
@@ -29,7 +28,8 @@ retry_icon = pyglet.image.load(retry_file_path)
 
 # Main ball sprites to play with
 earth_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'earth.png')
-soccer_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'soccer_ball.png')
+soccer_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites',
+                                'soccer_ball.png')
 earth_ball_image = pyglet.image.load(earth_ball_path)
 soccer_ball_image = pyglet.image.load(soccer_ball_path)
 #earth_sprite = pyglet.sprite.Sprite(earth_ball_image, 300, 300)
@@ -54,7 +54,14 @@ earth_balls = knockout_balls(4, earth_ball_image, 0.07)
 soccer_ball_balls = knockout_balls(4, soccer_ball_image, .53)
 
 class Platform:
+    '''
+    This class creates the platform for the game,
+    contains the methods,create, shrink, update, and render
+    '''
     def __init__(self, x, y, width, height):
+        '''
+        initializes the neccesarry parameters for platform creation
+        '''
         self.x = x
         self.y = y
         self.width = width
@@ -68,17 +75,31 @@ class Platform:
         self.y = self.y - (self.height // 2) 
 
     def create_image(self):
-        image = pyglet.image.SolidColorImagePattern((255, 255, 255, 255)).create_image(self.width, self.height)
+        '''
+        Method to create the image of the platform
+        '''
+        image = (pyglet.image
+                .SolidColorImagePattern((255, 255,255, 255))
+                .create_image(self.width, self.height))
         return image
 
 
     def render(self):
+        '''
+        Renders the platform onto the screen
+        '''
         self.image.blit(self.x, self.y, width=self.width*self.scale, height=self.height*self.scale)
 
 
     def shrink(self):
-        if self.scale > 0.5:  # Minimum scale threshold
-            self.scale -= 0.005  # Adjust shrinking rate as needed
+        '''
+        Method to shrink the platform, like the knockout game
+        TODO: make shrink from all directions, instead of just topright corner
+        '''
+        if self.scale >= 0.5:  # Minimum scale threshold
+            self.scale -= 0.00005
+            return True  # Adjust shrinking rate as needed
+        return False
 
 
     def update(self, dt):
@@ -91,7 +112,8 @@ platform = Platform(x=window.width//2, y=window.height//2, width=600, height=350
 Platform.center_platform(platform)
 
 # background
-background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds', 'water.jpg')
+background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds',
+                                     'water.jpg')
 background_image = pyglet.image.load(background_image_path)
 background_sprite = pyglet.sprite.Sprite(background_image)
 
@@ -105,8 +127,11 @@ background_sprite = pyglet.sprite.Sprite(background_image)
 
 # Define the update function (if needed)
 def update(dt):
+    '''
+    Handles all updates for the game
+    '''
     platform.update(dt)
-    pass
+    #pass
 
 
 # Set up the update function (if needed)
@@ -116,9 +141,13 @@ pyglet.clock.schedule(update)
 # Define the draw function
 @window.event
 def on_draw():
+    '''
+    draws the sprites for the two players
+    '''
     window.clear()
-    # Draw graphics 
+    # Draw graphics
     background_sprite.draw()
+    platform.render()
     label.draw()
     retry_icon.blit(600,500)
     quit_icon.blit(700,500)
