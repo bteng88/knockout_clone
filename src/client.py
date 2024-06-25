@@ -1,8 +1,10 @@
 import pyglet
+import random
 import os
+from math import sqrt
 
 # Create a window
-window = pyglet.window.Window(width=800, height=600, caption="Game Board")
+window = pyglet.window.Window(width = 800, height = 600, caption="Game Board")
 
 ''' need to adjust os path- use relative paths based on root directory to make more flexible
     this is for icons/spirtes...'''
@@ -17,7 +19,7 @@ music.play()
 # Make label
 # Get path to font file
 label = pyglet.text.Label("Label over here", font_name='Comic Sans MS', font_size = 18, 
-                          x=window.width//2 - 300, y=window.height//2 + 250, anchor_x='center', anchor_y='center')
+                          x=window.width//2 - 300, y=window.height//2 + 270, anchor_x='center', anchor_y='center')
 
 # Load icons-play/retry in the top right
 quit_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons', 'quit.png')
@@ -25,14 +27,31 @@ retry_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons',
 quit_icon = pyglet.image.load(quit_file_path)
 retry_icon = pyglet.image.load(retry_file_path)
 
-# tmp to see if sprites load in/what they look like
+# Main ball sprites to play with
 earth_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'earth.png')
 soccer_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'soccer_ball.png')
 earth_ball_image = pyglet.image.load(earth_ball_path)
 soccer_ball_image = pyglet.image.load(soccer_ball_path)
-earth_sprite = pyglet.sprite.Sprite(earth_ball_image, 300, 300,)
-earth_sprite.scale = 0.14
-soccer_ball_sprite = pyglet.sprite.Sprite(soccer_ball_image, 200, 200)
+#earth_sprite = pyglet.sprite.Sprite(earth_ball_image, 300, 300)
+#earth_sprite.scale = 0.14
+#soccer_ball_sprite = pyglet.sprite.Sprite(soccer_ball_image, 200, 200)
+
+# Function to create the balls at random locations
+def knockout_balls(num_balls, ball_image, scale_factor):
+    balls = []
+    for i in range(num_balls):
+        # NEED TO CHANGE TO CENTER, Both radius 26, ewdith = 52 = swidth, eheight = 51, sheight = 50
+        ball_x = random.randint(0, 800)
+        ball_y = random.randint(0, 600)
+        new_ball = pyglet.sprite.Sprite(ball_image, ball_x, ball_y)
+        new_ball.scale = scale_factor
+        new_ball.center_x = ball_x + 26 # CHECK +- for radius, depends on how it goes up
+        new_ball.center_y = ball_y + 26 # ASK DA QI if center_x and y are added variables to it
+        balls.append(new_ball)
+    return balls
+
+earth_balls = knockout_balls(4, earth_ball_image, 0.07) 
+soccer_ball_balls = knockout_balls(4, soccer_ball_image, .53)
 
 class Platform:
     def __init__(self, x, y, width, height):
@@ -43,36 +62,44 @@ class Platform:
         self.scale = 1.0  # Initial scale
         self.image = self.create_image()
 
+
+    def center_platform(self):
+        self.x = self.x - (self.width // 2)
+        self.y = self.y - (self.height // 2) 
+
     def create_image(self):
         image = pyglet.image.SolidColorImagePattern((255, 255, 255, 255)).create_image(self.width, self.height)
         return image
 
+
     def render(self):
         self.image.blit(self.x, self.y, width=self.width*self.scale, height=self.height*self.scale)
+
 
     def shrink(self):
         if self.scale > 0.5:  # Minimum scale threshold
             self.scale -= 0.005  # Adjust shrinking rate as needed
 
-    def update(self, dt):
-        self.shrink()
 
-# initialize platform
+    def update(self, dt):
+        #self.shrink()
+        pass
+
+
+# initialize platform in the middle
 platform = Platform(x=window.width//2, y=window.height//2, width=600, height=350)
+Platform.center_platform(platform)
 
 # background
 background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds', 'water.jpg')
 background_image = pyglet.image.load(background_image_path)
 background_sprite = pyglet.sprite.Sprite(background_image)
 
-'''class Circle:
-    # x,y will be coordinates, radius is used to detect collisions
-    def __init__(self, x, y, radius, ball_file):
-        # Load the sprite PNG file
-        self.ball_image = pyglet.image.load(ball_file)
 
-        # Create a sprite object from the loaded image
-        self.ball_sprite = pyglet.sprite.Sprite(self.ball_image, x_pos = x, y_pos= y)
+'''docstring:Set anchor point of image to center instead of lower left''' 
+'''def center_image(image):
+    image.anchor_x = image.width // 2
+    image.anchor_y = image.width // 2
 '''
 
 
@@ -81,11 +108,10 @@ def update(dt):
     platform.update(dt)
     pass
 
+
 # Set up the update function (if needed)
 pyglet.clock.schedule(update)
 
-# Create sprite object
-#sprite = pyglet.sprite.Sprite(sprite_image, x=400, y=300)
 
 # Define the draw function
 @window.event
@@ -96,12 +122,15 @@ def on_draw():
     label.draw()
     retry_icon.blit(600,500)
     quit_icon.blit(700,500)
-    earth_sprite.draw()
-    soccer_ball_sprite.draw()
     platform.render()
+    #earth_sprite.draw()
+    #soccer_ball_sprite.draw()
+    for earth in earth_balls:
+        earth.draw()
+    for soccer_ball in soccer_ball_balls:
+        soccer_ball.draw()
     
-
-
+    
 
 # Run the application
 #def main() :
