@@ -1,4 +1,5 @@
-import pyglet
+import pyglet # type: ignore 
+              # makes pylance not angry
 import random
 import os
 from math import sqrt
