@@ -1,5 +1,4 @@
-import pyglet # type: ignore 
-              # makes pylance not angry
+import pyglet 
 import random
 import os
 from math import sqrt
@@ -42,17 +41,41 @@ def knockout_balls(num_balls, ball_image, scale_factor):
     balls = []
     for i in range(num_balls):
         # NEED TO CHANGE TO CENTER, Both radius 26, ewdith = 52 = swidth, eheight = 51, sheight = 50
-        ball_x = random.randint(0, 800)
-        ball_y = random.randint(0, 600)
+        ball_x = random.randint(100, 600) # Bound in platform x position & width
+        ball_y = random.randint(125, 350) 
         new_ball = pyglet.sprite.Sprite(ball_image, ball_x, ball_y)
         new_ball.scale = scale_factor
-        new_ball.center_x = ball_x + 26 # CHECK +- for radius, depends on how it goes up
-        new_ball.center_y = ball_y + 26 # ASK DA QI if center_x and y are added variables to it
+        new_ball.center_x = ball_x + 26 # Center position is right of relative x
+        new_ball.center_y = ball_y + 26 # Center position is right of relative y
         balls.append(new_ball)
     return balls
 
 earth_balls = knockout_balls(4, earth_ball_image, 0.07) 
 soccer_ball_balls = knockout_balls(4, soccer_ball_image, .53)
+all_balls = earth_balls + soccer_ball_balls
+
+# Utility function that returns distance between two balls
+def distance(ball1, ball2):
+    return sqrt((ball1.center_x - ball2.center_y) ** 2 + (ball1.center_y - ball2.center_y) ** 2)
+
+# Function to reposition balls if they are too close to one another
+def reposition_balls(all_balls):
+    for index, ball in enumerate(all_balls):
+        print(index)
+        valid_position = False
+        while not valid_position:
+            valid_position = True
+            for i in range(index):
+                if all_balls[i] != ball and distance(ball, all_balls[i]) < 55: 
+                    ball.x = random.randint(100, 600) # Bound in platform x position & width
+                    ball.y = random.randint(125, 350)
+                    ball.center_x = ball.x + 26 # Center position is right of relative x
+                    ball.center_y = ball.y + 26
+                    valid_position = False
+                    print("new position made")
+                    break # Reset while loop so it checks from the beginning again
+    
+reposition_balls(all_balls)
 
 class Platform:
     '''
@@ -74,6 +97,7 @@ class Platform:
     def center_platform(self):
         self.x = self.x - (self.width // 2)
         self.y = self.y - (self.height // 2) 
+
 
     def create_image(self):
         '''
