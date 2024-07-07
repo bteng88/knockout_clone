@@ -15,16 +15,28 @@ audio_file_path = os.path.join(current_dir, '..','assets', 'audio',
 music = pyglet.media.load(audio_file_path)
 music.play()
 
+# Batch to draw everything at once
+main_batch = pyglet.graphics.Batch()
+
+# background
+background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds',
+                                     'water.jpg')
+background_image = pyglet.image.load(background_image_path)
+background_sprite = pyglet.sprite.Sprite(background_image, batch=main_batch)
+
 # Make label
 # Get path to font file
 label = pyglet.text.Label("Label over here", font_name='Comic Sans MS', font_size = 18, 
-                          x=window.width//2 - 300, y=window.height//2 + 270, anchor_x='center', anchor_y='center')
+                          x=window.width//2 - 300, y=window.height//2 + 270, anchor_x='center', anchor_y='center',
+                          batch=main_batch)
 
 # Load icons-play/retry in the top right
 quit_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons', 'quit.png')
 retry_file_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'icons', 'retry.png')
 quit_icon = pyglet.image.load(quit_file_path)
 retry_icon = pyglet.image.load(retry_file_path)
+quit_icon_sprite = pyglet.sprite.Sprite(quit_icon, x=600, y=500, batch=main_batch)
+retry_icon_sprite = pyglet.sprite.Sprite(retry_icon, x=700, y=500, batch=main_batch)
 
 # Main ball sprites to play with
 earth_ball_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'sprites', 'earth.png')
@@ -37,62 +49,59 @@ soccer_ball_image = pyglet.image.load(soccer_ball_path)
 #soccer_ball_sprite = pyglet.sprite.Sprite(soccer_ball_image, 200, 200)
 
 # Function to create the balls at random locations
-def knockout_balls(num_balls, ball_image, scale_factor):
+def knockout_balls(num_balls, ball_image, scale_factor, batch=None):
     balls = []
     for i in range(num_balls):
         # NEED TO CHANGE TO CENTER, Both radius 26, ewdith = 52 = swidth, eheight = 51, sheight = 50
         ball_x = random.randint(100, 600) # Bound in platform x position & width
         ball_y = random.randint(125, 350) 
-        new_ball = pyglet.sprite.Sprite(ball_image, ball_x, ball_y)
+        new_ball = pyglet.sprite.Sprite(ball_image, ball_x, ball_y, batch=batch)
         new_ball.scale = scale_factor
         new_ball.center_x = ball_x + 26 # Center position is right of relative x
         new_ball.center_y = ball_y + 26 # Center position is right of relative y
         balls.append(new_ball)
     return balls
 
-earth_balls = knockout_balls(4, earth_ball_image, 0.07) 
-soccer_ball_balls = knockout_balls(4, soccer_ball_image, .53)
+earth_balls = knockout_balls(4, earth_ball_image, 0.07, main_batch) 
+soccer_ball_balls = knockout_balls(4, soccer_ball_image, .53, main_batch)
 all_balls = earth_balls + soccer_ball_balls
 
 # Utility function that returns distance between two balls
 def distance(ball1, ball2):
-    return sqrt((ball1.center_x - ball2.center_y) ** 2 + (ball1.center_y - ball2.center_y) ** 2)
+    return sqrt((ball1.center_x - ball2.center_x) ** 2 + (ball1.center_y - ball2.center_y) ** 2)
 
 # Function to reposition balls if they are too close to one another
 def reposition_balls(all_balls):
     for index, ball in enumerate(all_balls):
-        print(index)
         valid_position = False
         while not valid_position:
             valid_position = True
             for i in range(index):
-                if all_balls[i] != ball and distance(ball, all_balls[i]) < 55: 
+                if all_balls[i] != ball and distance(ball, all_balls[i]) < 55:  # Checks all previous balls positions for overlaps
                     ball.x = random.randint(100, 600) # Bound in platform x position & width
                     ball.y = random.randint(125, 350)
                     ball.center_x = ball.x + 26 # Center position is right of relative x
                     ball.center_y = ball.y + 26
                     valid_position = False
-                    print("new position made")
                     break # Reset while loop so it checks from the beginning again
     
 reposition_balls(all_balls)
 
-class Platform:
+class Platform(pyglet.sprite.Sprite):
     '''
     This class creates the platform for the game,
     contains the methods,create, shrink, update, and render
     '''
-    def __init__(self, x, y, width, height):
-        '''
-        initializes the neccesarry parameters for platform creation
-        '''
-        self.x = x
-        self.y = y
+    def __init__(self, x, y, width, height, batch=None):
         self.width = width
         self.height = height
-        self.scale = 1.0  # Initial scale
         self.image = self.create_image()
-
+        super().__init__(self.image, x, y, batch=batch)
+        '''
+        initializes the neccesarry parameters for platform creation
+        '''  
+        self.scale = 1.0  # Initial scale
+        
 
     def center_platform(self):
         self.x = self.x - (self.width // 2)
@@ -133,14 +142,8 @@ class Platform:
 
 
 # initialize platform in the middle
-platform = Platform(x=window.width//2, y=window.height//2, width=600, height=350)
+platform = Platform(x=window.width//2, y=window.height//2, width=600, height=350, batch=main_batch)
 Platform.center_platform(platform)
-
-# background
-background_image_path = os.path.join(current_dir, '..', 'assets', 'graphics', 'backgrounds',
-                                     'water.jpg')
-background_image = pyglet.image.load(background_image_path)
-background_sprite = pyglet.sprite.Sprite(background_image)
 
 
 '''docstring:Set anchor point of image to center instead of lower left''' 
@@ -171,18 +174,16 @@ def on_draw():
     '''
     window.clear()
     # Draw graphics
-    background_sprite.draw()
-    platform.render()
+    '''background_sprite.draw()
     label.draw()
     retry_icon.blit(600,500)
     quit_icon.blit(700,500)
     platform.render()
-    #earth_sprite.draw()
-    #soccer_ball_sprite.draw()
     for earth in earth_balls:
         earth.draw()
     for soccer_ball in soccer_ball_balls:
-        soccer_ball.draw()
+        soccer_ball.draw()'''
+    main_batch.draw()
     
     
 
